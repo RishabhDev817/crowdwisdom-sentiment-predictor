@@ -69,7 +69,7 @@ def sample_raw_tweet_items():
 # 1. Missing Token & Token Security
 def test_get_apify_token_missing():
     """Verifies MissingCredentialsError when APIFY_API_TOKEN is unset."""
-    with patch.dict(os.environ, {}, clear=True):
+    with patch.dict(os.environ, {}, clear=True), patch("src.ingestion.x_posts.dotenv.load_dotenv"):
         with pytest.raises(MissingCredentialsError, match="APIFY_API_TOKEN"):
             get_apify_token()
 
@@ -404,9 +404,9 @@ def test_load_config_sentiment_section():
     assert "sentiment" in config
     sentiment = config["sentiment"]
     assert sentiment["apify_actor_id"] == "apidojo/tweet-scraper"
-    assert sentiment["search_terms"] == ["BTC", "Bitcoin", "#BTC"]
+    assert sentiment["search_terms"] == ["Bitcoin"]
     assert sentiment["language"] == "en"
-    assert sentiment["max_items"] == 500
+    assert sentiment["max_items"] == 10
 
 
 # 11. Pipeline Orchestration Mocked End-to-End
@@ -437,3 +437,42 @@ def test_ingest_x_posts_pipeline_mocked_success(sample_raw_tweet_items, tmp_path
     assert saved_csv == out_csv.resolve()
     assert saved_json.exists()
     assert saved_csv.exists()
+
+
+def test_ingest_x_posts_pipeline_search_terms_override(sample_raw_tweet_items, tmp_path: Path):
+    """Verifies that search_terms_override properly scopes actor queries to a single term."""
+    mock_client = MagicMock()
+    mock_actor = MagicMock()
+    mock_dataset = MagicMock()
+
+    mock_client.actor.return_value = mock_actor
+    mock_client.dataset.return_value = mock_dataset
+
+    mock_actor.call.return_value = {"id": "run_single", "status": "SUCCEEDED", "defaultDatasetId": "ds_single"}
+    mock_dataset.iterate_items.return_value = iter(sample_raw_tweet_items)
+
+    out_json = tmp_path / "single_raw.json"
+    out_csv = tmp_path / "single_normalized.csv"
+
+    ingest_x_posts_pipeline(
+        config_path="config/config.yaml",
+        search_terms_override="Bitcoin",
+        max_items_override=10,
+        raw_json_override=out_json,
+        normalized_csv_override=out_csv,
+        client=mock_client,
+    )
+
+    # Check the call arguments passed to actor.call
+    call_kwargs = mock_actor.call.call_args[1]
+    run_input = call_kwargs["run_input"]
+
+    assert run_input["maxItems"] == 10
+    assert run_input["sort"] == "Latest"
+    assert len(run_input["searchTerms"]) == 1
+    query_str = run_input["searchTerms"][0]
+    assert query_str.startswith("Bitcoin lang:en since:")
+    assert "until:" in query_str
+    # Verify no overlapping queries are included
+    assert "BTC" not in query_str or "Bitcoin" in query_str
+    assert "#BTC" not in query_str

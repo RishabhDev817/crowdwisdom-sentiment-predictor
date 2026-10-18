@@ -10,13 +10,13 @@ asset:
 
 forecasting:
   target_column: "Close"
+  nowcast_reference: 0  # Contemporaneous nowcast reference (shift=0), not a learned forecast
   horizons:
-    - 0  # n+0
-    - 1  # n+1
-    - 2  # n+2
-    - 3  # n+3
-    - 4  # n+4
-    - 5  # n+5
+    - 1  # n+1 (1-day forward)
+    - 2  # n+2 (2-day forward)
+    - 3  # n+3 (3-day forward)
+    - 4  # n+4 (4-day forward)
+    - 5  # n+5 (5-day forward)
 
 validation:
   scheme: "walk_forward"
@@ -33,13 +33,16 @@ sentiment:
   provider: "apify"
   apify_actor_id: "apidojo/tweet-scraper"
   search_terms:
-    - "BTC"
     - "Bitcoin"
-    - "#BTC"
   language: "en"               # Appends 'lang:en' to query strings
-  max_items: 500               # Hard maximum results across search queries
+  max_items: 10                # Hard maximum results across search queries
   sort: "Latest"               # Scrapes latest tweets chronologically
   # Note: lookback_days reuses asset.lookback_days (180 days) by default.
   # Twitter Advanced Search 'until:YYYY-MM-DD' operator is exclusive (ends at 00:00:00 UTC).
   raw_json_filename: "x_posts_btc_raw.json"
   normalized_csv_filename: "x_posts_btc_normalized.csv"
+
+baselines:
+  ridge:
+    alpha: 1.0
+    impute_strategy: "median"

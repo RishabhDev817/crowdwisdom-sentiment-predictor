@@ -397,6 +397,7 @@ def ingest_x_posts_pipeline(
     config_path: Union[str, Path] = "config/config.yaml",
     actor_override: Optional[str] = None,
     max_items_override: Optional[int] = None,
+    search_terms_override: Optional[Union[str, List[str]]] = None,
     raw_json_override: Optional[Union[str, Path]] = None,
     normalized_csv_override: Optional[Union[str, Path]] = None,
     client: Optional[ApifyClient] = None,
@@ -408,6 +409,7 @@ def ingest_x_posts_pipeline(
         config_path: Path to YAML configuration file.
         actor_override: Optional override for Apify actor ID.
         max_items_override: Optional override for max items.
+        search_terms_override: Optional override for search term(s) (e.g. 'Bitcoin' or ['Bitcoin']).
         raw_json_override: Optional override for raw JSON path.
         normalized_csv_override: Optional override for normalized CSV path.
         client: Optional ApifyClient (useful for testing and dependency injection).
@@ -426,9 +428,15 @@ def ingest_x_posts_pipeline(
     paths_cfg = config.get("paths", {})
 
     actor_id = actor_override or sentiment_cfg.get("apify_actor_id", "apidojo/tweet-scraper")
-    search_terms = sentiment_cfg.get("search_terms", ["BTC", "Bitcoin", "#BTC"])
+    if search_terms_override is not None:
+        if isinstance(search_terms_override, str):
+            search_terms = [search_terms_override]
+        else:
+            search_terms = list(search_terms_override)
+    else:
+        search_terms = sentiment_cfg.get("search_terms", ["Bitcoin"])
     language = sentiment_cfg.get("language", "en")
-    max_items = max_items_override or sentiment_cfg.get("max_items", 500)
+    max_items = max_items_override or sentiment_cfg.get("max_items", 10)
     sort_order = sentiment_cfg.get("sort", "Latest")
 
     # Reuse asset lookback days by default
@@ -510,6 +518,12 @@ def main() -> None:
         help="Maximum items override (default: from config)",
     )
     parser.add_argument(
+        "--search-term",
+        type=str,
+        default=None,
+        help="Single search term override (default: from config, e.g. 'Bitcoin')",
+    )
+    parser.add_argument(
         "--raw-json",
         type=str,
         default=None,
@@ -530,6 +544,7 @@ def main() -> None:
             config_path=args.config,
             actor_override=args.actor_id,
             max_items_override=args.max_items,
+            search_terms_override=args.search_term,
             raw_json_override=args.raw_json,
             normalized_csv_override=args.normalized_csv,
         )
