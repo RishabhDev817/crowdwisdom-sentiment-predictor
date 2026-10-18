@@ -28,3 +28,18 @@ paths:
   raw_data_dir: "data/raw"
   processed_data_dir: "data/processed"
   figures_dir: "reports/figures"
+
+sentiment:
+  provider: "apify"
+  apify_actor_id: "apidojo/tweet-scraper"
+  search_terms:
+    - "BTC"
+    - "Bitcoin"
+    - "#BTC"
+  language: "en"               # Appends 'lang:en' to query strings
+  max_items: 500               # Hard maximum results across search queries
+  sort: "Latest"               # Scrapes latest tweets chronologically
+  # Note: lookback_days reuses asset.lookback_days (180 days) by default.
+  # Twitter Advanced Search 'until:YYYY-MM-DD' operator is exclusive (ends at 00:00:00 UTC).
+  raw_json_filename: "x_posts_btc_raw.json"
+  normalized_csv_filename: "x_posts_btc_normalized.csv"

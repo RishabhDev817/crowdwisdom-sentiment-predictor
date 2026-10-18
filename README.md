@@ -25,19 +25,21 @@ The primary objective of this project is to build an end-to-end, reproducible fo
    - Feature importance and sentiment attribution diagnostics.
 
 ## Current Setup Status
-- **Status**: Initial project scaffolding complete.
+- **Status**: Data ingestion phase in progress.
 - **Implemented Components**:
   - Directory hierarchy established (`config/`, `data/`, `src/`, `reports/`, `tests/`, `notebooks/`).
-  - Base configuration defined in `config/config.yaml` (configured for BTC-USD, daily bars, and 180-day lookback).
+  - Base configuration defined in `config/config.yaml` (configured for BTC-USD, daily bars, 180-day lookback, and Apify sentiment settings).
   - Environment variable template created (`.env.example`).
   - Core package dependencies specified (`requirements.txt`).
+  - Historical BTC-USD price ingestion pipeline (`src/ingestion/price_data.py`) with comprehensive validation and unit test suite.
+  - X (Twitter) post ingestion pipeline (`src/ingestion/x_posts.py`) with schema normalization, deduplication, and offline test suite.
 - **Pending Implementation**:
-  - Market data extraction and sentiment ingestion pipelines.
-  - Feature processing and alignment logic.
+  - Social sentiment scoring and polarity analysis.
+  - Feature engineering and timestamp alignment to daily market close.
   - Model architectures, training routines, and walk-forward validation.
   - Evaluation reporting and visualization scripts.
 
-*(Note: No models have been trained and no real or synthetic datasets/metrics have been generated yet.)*
+*(Note: No forecasting models have been trained and no sentiment scores have been generated yet.)*
 
 ## Project Structure
 ```text
@@ -51,7 +53,7 @@ crowdwisdom-sentiment-predictor/
 ├── reports/
 │   └── figures/               # Generated evaluation charts & plots
 ├── src/
-│   ├── ingestion/             # Data retrieval modules
+│   ├── ingestion/             # Data retrieval modules (price_data.py, x_posts.py)
 │   ├── processing/            # Data cleaning & feature engineering
 │   ├── models/                # Multi-horizon forecasting models
 │   ├── evaluation/            # Walk-forward validation & quant metrics
@@ -77,3 +79,12 @@ Copy `.env.example` to `.env` and populate your API credentials when ready:
 cp .env.example .env
 ```
 Ensure parameters in `config/config.yaml` match your target settings.
+
+### 3. Running Data Ingestion
+```bash
+# Ingest historical BTC price bars (yfinance)
+python -m src.ingestion.price_data
+
+# Ingest historical X posts (Apify - requires APIFY_API_TOKEN in .env)
+python -m src.ingestion.x_posts
+```

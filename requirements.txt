@@ -18,5 +18,8 @@ seaborn>=0.13.0
 pyyaml>=6.0.1
 python-dotenv>=1.0.1
 
+# Sentiment & Web Scraping Clients
+apify-client>=1.8.0,<2.0.0
+
 # Testing & Quality
 pytest>=8.0.0
