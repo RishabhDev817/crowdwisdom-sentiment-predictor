@@ -1,0 +1,30 @@
+project:
+  name: "crowdwisdom-sentiment-predictor"
+  version: "0.1.0"
+  random_seed: 42
+
+asset:
+  symbol: "BTC-USD"
+  interval: "1d"          # Daily bars
+  lookback_days: 180      # 180-day historical lookback window
+
+forecasting:
+  target_column: "Close"
+  horizons:
+    - 0  # n+0
+    - 1  # n+1
+    - 2  # n+2
+    - 3  # n+3
+    - 4  # n+4
+    - 5  # n+5
+
+validation:
+  scheme: "walk_forward"
+  train_window_days: 90
+  test_window_days: 15
+  step_days: 7
+
+paths:
+  raw_data_dir: "data/raw"
+  processed_data_dir: "data/processed"
+  figures_dir: "reports/figures"

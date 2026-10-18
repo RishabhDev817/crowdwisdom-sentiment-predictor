@@ -1,0 +1,22 @@
+# Data Handling and Numerical Computations
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Financial / Market Data
+yfinance>=0.2.36
+
+# Machine Learning & Modeling
+scikit-learn>=1.3.0
+xgboost>=2.0.0
+lightgbm>=4.0.0
+
+# Visualization
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# Configuration & Environment Management
+pyyaml>=6.0.1
+python-dotenv>=1.0.1
+
+# Testing & Quality
+pytest>=8.0.0
